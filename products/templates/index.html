@@ -53,8 +53,8 @@
         }
     </script>
     <!-- Добавить строку поиска -->
-    <form name="search" action="#" method="get">
-        <input type="text" name="q" placeholder="Search"><button type="submit">GO</button>
+    <form name="search" action="{% url 'search' %}" method="GET">
+        <input type="text" name="q" placeholder="Поиск..."><button type="submit">GO</button>
     </form>
 
     <!-- Меню -->

@@ -25,6 +25,12 @@ def index(request):
         'profiles': profiles,
         'protocols': protocols,
     })
+
+#для строки поиска
+def search_view(request):
+    query=request.GET.get('q')
+    return render(request, 'search_results.html', {'query': query})
+
 # Функции-помощники для безопасного разбора списков
 def parse_float_list(post_data, field_name):
     return [
