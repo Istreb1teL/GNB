@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Протокол бурения</title>
+    <link rel="stylesheet" href="{% static 'css/protocol.css' %}">
+</head>
+<body>
+    <h1>Создание протокола бурения</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <label>Адрес строительства:</label>
+        <input type="text" name="address" required>
+
+        <label>Название буровой системы:</label>
+        <input type="text" name="drill_system" required>
+
+        <label>Система локации буровой головки:</label>
+        <input type="text" name="location_system" required>
+
+        <label>Руководитель буровых работ:</label>
+        <input type="text" name="drilling_supervisor" required>
+
+        <label>Руководитель строительства:</label>
+        <input type="text" name="construction_supervisor" required>
+
+        <label>Длина прокладки, м:</label>
+        <input type="number" name="total_length" required>
+
+        <label>Длина одной штанги, м:</label>
+        <input type="number" name="rod_length" step="0.01" required>
+
+        <label>Расширения (в мм, через запятую):</label>
+        <input type="text" name="expansions" required>
+
+        <label>Уровни поверхности (высоты), через запятую:</label>
+        <input type="text" name="ground_levels" required>
+
+        <label>Глубины трубы (в метрах), через запятую:</label>
+        <input type="text" name="pipe_depths" required>
+
+        <button type="submit">Сгенерировать и сохранить протокол</button>
+    </form>
+
+    <a href="{% url 'index' %}">← Назад на главную</a>
+    {% if submitted %}
+      <form action="{% url 'export_protocol_excel' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="rod_length" value="{{ rod_length }}">
+        <input type="hidden" name="total_length" value="{{ total_length }}">
+        <input type="hidden" name="ground_levels" value="{{ form.cleaned_data.ground_levels }}">
+        <input type="hidden" name="pipe_depths" value="{{ form.cleaned_data.pipe_depths }}">
+        <button type="submit">Скачать протокол (Excel)</button>
+      </form>
+    {% endif %}
+</body>
+</html>

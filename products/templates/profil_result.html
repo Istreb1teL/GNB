@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результат графика</title>
+</head>
+<body>
+    <h1>Профиль: {{ title }}</h1>
+
+    {% if image %}
+        <img src="data:image/png;base64,{{ image|safe }}" alt="График">
+    {% endif %}
+
+    <form method="post" action="{% url 'save_profile' %}">
+        {% csrf_token %}
+        <label>Адрес объекта:</label>
+        <input type="text" name="address" required><br>
+        <label>Описание (газ, вода и т.д.):</label>
+        <input type="text" name="description"><br>
+        <button type="submit">Сохранить профиль</button>
+    </form>
+
+    <a href="{% url 'index' %}">← Вернуться на главную</a>
+</body>
+</html>

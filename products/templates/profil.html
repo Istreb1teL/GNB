@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<!-- название стриницы -->
+	<title>GNB</title>
+	<link rel="stylesheet" href="{% static '/css/profil.css' %}" type="text/css">
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Oswald:400,300" type="text/css">
+
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+    <title>Title</title>
+</head>
+<body>
+    <h1>Создание графика прокола</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <label>Название графика:</label>
+        <input type="text" name="title" required><br>
+
+        <label>X отметки грунта (длины, через запятую):</label>
+        <input type="text" name="ground_x" required><br>
+
+        <label>Y отметки грунта (высоты, через запятую):</label>
+        <input type="text" name="ground_y" required><br>
+
+
+    <form method="post">
+        {% csrf_token %}
+        <label>Название графика:</label>
+        <input type="text" name="title" required><br>
+
+        <label>X отметки поверхности (длины, через запятую):</label>
+        <input type="text" name="ground_x" required><br>
+
+        <label>Y отметки поверхности (высоты, через запятую):</label>
+        <input type="text" name="ground_y" required><br>
+
+        <label>Название коммуникации:</label>
+        <input type="text" name="comm_name"><br>
+
+        <label>X коммуникаций:</label>
+        <input type="text" name="comm_x"><br>
+
+        <label>Y коммуникаций:</label>
+        <input type="text" name="comm_y"><br>
+
+        <label>Форма коммуникации:</label>
+        <select name="shape">
+            <option value="ellipse">Эллипс</option>
+            <option value="circle">Круг</option>
+        </select>
+
+        <label>Название коммуникации:</label>
+        <input type="text" name="comm_name"><br>
+
+        <label>X коммуникаций:</label>
+        <input type="text" name="comm_x"><br>
+
+        <label>Y коммуникаций:</label>
+        <input type="text" name="comm_y"><br>
+
+        <label>Форма коммуникации:</label>
+        <select name="shape">
+            <option value="ellipse">Эллипс</option>
+            <option value="circle">Круг</option>
+        </select><br><br>    <h1>Создание графика прокола</h1>
+        <br></br>
+
+        <button type="submit" name="generate">Сформировать профиль</button>
+        <button type="submit" name="save">Сохранить профиль</button>
+        <button onclick="window.location.href='{% url 'protocol' %}>Сформировать протокол</button>
+
+    </form>
+
+</body>
+</html>

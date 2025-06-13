@@ -1,0 +1,97 @@
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #2b3e50;
+    padding: 10px 20px;
+    color: white;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.menu {
+    background-color: #1c2b36;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #3a4f63;
+    transition: background-color 0.3s ease;
+}
+
+.menu a:hover {
+    background-color: #587086;
+}
+
+.section {
+    padding: 20px;
+    background-color: white;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.document {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #e9eef3;
+    border-left: 4px solid #3a4f63;
+    border-radius: 5px;
+}
+
+
+//все для футера
+footer {
+	background: #7e7e7e;
+	color: #dbdbdb;
+	font-size: 11px;
+}
+
+#footer {
+	max-width: 960px;
+	margin: auto;
+	padding: 10px 0;
+	height: 90px;
+}
+footer h3 {
+	font: 14px 'Oswald', sans-serif;
+	color: #fff;
+	border-bottom: 1px solid #919191;
+	margin: 0 0 10px 0;
+}
+
+
+footer p {
+	margin: 5px 0;
+}
+
+#twitter {
+	float: left;
+	width: 300px;
+}
+
+#twitter p {
+	padding-right: 15px;
+}
+#footer-logo {
+	float: right;
+	margin-top: 20px;
+	font-size: 10px;
+	text-align: right;
+}
