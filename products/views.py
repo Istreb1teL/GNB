@@ -1,6 +1,5 @@
 import openpyxl
 from openpyxl.styles import Font
-from django.http import HttpResponse
 from io import BytesIO
 import os
 import io
@@ -18,7 +17,7 @@ def index(request):
     projects = Project.objects.all()
     attachments = Attachment.objects.all()
     profiles = Profile.objects.all()
-    protocols = Protocol.objects.all()
+    protocols = Protocol.objects.all.order_by('-created_at')
     return render(request, 'index.html', {
         'projects': projects,
         'attachments': attachments,
@@ -262,10 +261,6 @@ def protocol_view(request):
         form = ProtocolForm()
     return render(request, 'protocol.html', {'form': form})
 
-#добавим список протоколов на главной:
 
-def index(request):
-    protocols = Protocol.objects.all().order_by('-created_at')
-    return render(request, 'index.html', {'protocols': protocols})
 def save_profile_document(request):
     return HttpResponse(" Заглушка для save_profile_document - функция работает")
