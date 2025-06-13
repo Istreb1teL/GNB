@@ -17,7 +17,7 @@ def index(request):
     projects = Project.objects.all()
     attachments = Attachment.objects.all()
     profiles = Profile.objects.all()
-    protocols = Protocol.objects.all.order_by('-created_at')
+    protocols = Protocol.objects.order_by('-created_at')
     return render(request, 'index.html', {
         'projects': projects,
         'attachments': attachments,
