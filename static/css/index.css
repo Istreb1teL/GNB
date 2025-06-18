@@ -5,7 +5,48 @@ body {
     margin: 0;
     padding: 0;
 }
+.container{width:90%, margin:20px auto;}
 
+/* Стили вкладок */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tabs input[type="radio"] {
+    display: none;
+}
+
+.tabs label {
+    padding: 10px 20px;
+    background: #e0e0e0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.tabs label:hover {
+    background: #d0d0d0;
+}
+
+.tabs input[type="radio"]:checked + label {
+    background: #4CAF50;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#tab1:checked ~ #content1,
+#tab2:checked ~ #content2,
+#tab3:checked ~ #content3,
+#tab4:checked ~ #content4 {
+    display: block;
+}
 .header {
     display: flex;
     justify-content: space-between;
@@ -54,8 +95,52 @@ body {
     border-left: 4px solid #3a4f63;
     border-radius: 5px;
 }
+max-width: 768px {
+    .tabs label {
+        width: 100%;
+        text-align: center;
+    }
+}
+.document-table tr:hover {
+    background-color: #f0f0f0;
+}
 
+/* Стили для профилей */
+.profile-image-container {
+    margin: 15px 0;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #f9f9f9;
+    text-align: center;
+}
 
+.profile-image-preview {
+    max-width: 100%;
+    max-height: 300px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.download-btn {
+    display: inline-block;
+    padding: 5px 15px;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.download-btn:hover {
+    background: #45a049;
+}
+
+.empty-message {
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
 //все для футера
 footer {
 	background: #7e7e7e;

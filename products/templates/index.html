@@ -10,6 +10,7 @@
 	<!-- название стриницы -->
 	<title>GNB</title>
 	<link rel="stylesheet" href="{% static '/css/index.css' %}" type="text/css">
+    <script src="{% static 'js/index.js' %}"></script>
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Oswald:400,300" type="text/css">
 
 	<!--[if lt IE 9]>
@@ -52,10 +53,7 @@
             if (event.target == modal) modal.style.display = "none";
         }
     </script>
-    <!-- Добавить строку поиска -->
-    <form name="search" action="{% url 'search' %}" method="GET">
-        <input type="text" name="q" placeholder="Поиск..."><button type="submit">GO</button>
-    </form>
+
 
     <!-- Меню -->
     <section>
@@ -78,80 +76,170 @@
             <button type="submit" name="upload_protocol">Загрузить протокол</button>
         </form>
     </section>
+    <div class="container">
+        <!-- Поисковая строка -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Поиск по документам...">
+            <button onclick="searchDocuments()">Найти</button>
+        </div>
 
-    <section>
-        <h2>Документы</h2>
+        <!-- Меню-вкладки -->
+        <div class="tabs">
+            <input type="radio" name="tabs" id="tab1" checked>
+            <label for="tab1">ГЛАВНАЯ</label>
+            <input type="radio" name="tabs" id="tab2">
+            <label for="tab2">ПРОЕКТЫ</label>
+            <input type="radio" name="tabs" id="tab3">
+            <label for="tab3">ПРИВЯЗКИ</label>
+            <input type="radio" name="tabs" id="tab4">
+            <label for="tab4">ПРОТОКОЛЫ</label>
 
-        <h3>Проекты</h3>
-        <ul>
-            {% for project in projects %}
-                <li>{{ project.address }} — {{ project.description }} —
-                    <a href="{{ project.file.url }}" target="_blank">Скачать</a>
-                </li>
-            {% empty %}
-                <li>Нет загруженных проектов</li>
-            {% endfor %}
-        </ul>
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="content1">
+                <div class="welcome">
+                    <h1>Добро пожаловать в систему ГНБ!</h1>
+                    <p>Это приложение помогает управлять документами по горизонтально-направленному бурению.</p>
+                    <img src="{% static '/img/foto2.png' %}" alt="ГНБ" class="welcome-image">
+                </div>
+            </div>
 
-        <h3>Привязки</h3>
-        <ul>
-            {% for a in attachments %}
-                <li>{{ a.address }} — {{ a.description }} —
-                    <a href="{{ a.file.url }}" target="_blank">Скачать</a>
-                </li>
-            {% empty %}
-                <li>Нет загруженных привязок</li>
-            {% endfor %}
-        </ul>
+            <div class="tab-content" id="content2">
+                <table class="document-table">
+                    <thead>
+                        <tr>
+                            <th>Адрес</th>
+                            <th>Описание</th>
+                            <th>Файл</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr class="searchable">
+                            <td>{{ project.address }}</td>
+                            <td>{{ project.description }}</td>
+                            <td><a href="{{ project.file.url }}" download>Скачать</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <h3>Профили (графики)</h3>
-        <ul>
-            {% for p in profiles %}
-                <li>{{ p.address }} — {{ p.description }} —
-                    <a href="{{ p.image.url }}" target="_blank">Открыть</a>
-                </li>
-            {% empty %}
-                <li>Нет профилей</li>
-            {% endfor %}
-        </ul>
+            <div class="tab-content" id="content3">
+                <table class="document-table">
+                    <thead>
+                        <tr>
+                            <th>Адрес</th>
+                            <th>Описание</th>
+                            <th>Файл</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for binding in bindings %}
+                        <tr class="searchable">
+                            <td>{{ binding.address }}</td>
+                            <td>{{ binding.description }}</td>
+                            <td><a href="{{ binding.file.url }}" download>Скачать</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="document-section">
+                <h2>Профили</h2>
+                <div class="document-list">
+                    {% for profile in profiles %}
+                    <div class="document-item">
+                        <div class="document-header">
+                            <h3>{{ profile.address }}</h3>
+                            <span class="document-date">{{ profile.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <p class="document-description">{{ profile.description|default:"Описание отсутствует" }}</p>
 
-        <h3>Протоколы бурения</h3>
-        <ul>
-            {% for pr in protocols %}
-                <li>{{ pr.address }} — {{ pr.description }} —
-                    <a href="{{ pr.file.url }}" target="_blank">Скачать</a>
-                </li>
-            {% empty %}
-                <li>Нет протоколов</li>
-            {% endfor %}
-        </ul>
-    </section>
+                        <!-- Изображение профиля -->
+                        <div class="profile-image-container">
+                            <img src="{{ profile.image.url }}" alt="Профиль прокола {{ profile.address }}"
+                                 class="profile-image-preview">
+                            <a href="{{ profile.image.url }}" download class="download-btn">Скачать</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">Нет сохранённых профилей</p>
+                    {% endfor %}
+                </div>
 
-    <!-- templates/index.html -->
+                <!-- Пагинация -->
+                {% if profiles.has_other_pages %}
+                <div class="pagination">
+                    {% if profiles.has_previous %}
+                    <a href="?page={{ profiles.previous_page_number }}">&laquo;</a>
+                    {% endif %}
 
-    <h2>Сохранённые протоколы</h2>
-    <table>
-      <tr>
-        <th>Адрес</th>
-        <th>Описание</th>
-        <th>Система бурения</th>
-        <th>Длина</th>
-        <th>Расширение</th>
-        <th>Дата</th>
-      </tr>
-      {% for p in protocols %}
-      <tr>
-        <td>{{ p.address }}</td>
-        <td>{{ p.description }}</td>
-        <td>{{ p.drilling_system }}</td>
-        <td>{{ p.total_length }} м</td>
-        <td>{{ p.expansion_sequence }}</td>
-        <td>{{ p.created_at|date:"d.m.Y" }}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6">Нет сохранённых протоколов</td></tr>
-      {% endfor %}
-    </table>
+                    {% for num in profiles.paginator.page_range %}
+                    {% if profiles.number == num %}
+                    <span class="current">{{ num }}</span>
+                    {% else %}
+                    <a href="?page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if profiles.has_next %}
+                    <a href="?page={{ profiles.next_page_number }}">&raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="tab-content" id="content4">
+                <table class="document-table sortable">
+                    <thead>
+                        <tr>
+                            <th>Адрес</th>
+                            <th>Описание</th>
+                            <th>Файл</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for protocol in protocols %}
+                        <tr class="searchable">
+                            <td>{{ protocol.address }}</td>
+                            <td>{{ protocol.description }}</td>
+                            <td><a href="{{ protocol.file.url }}" download>Скачать</a></td>
+                            <td>{{ protocol.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="{% static 'js/sorttable.js' %}"></script>
+    <script>
+        function searchDocuments() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const visibleTab = document.querySelector('.tab-content[style*="display: block"]') ||
+                             document.querySelector('.tab-content:not([style*="display: none"])');
+
+            if (!visibleTab) return;
+
+            const rows = visibleTab.querySelectorAll('tr.searchable');
+
+            rows.forEach(row => {
+                const text = row.textContent.toUpperCase();
+                row.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+
+        // Поиск при нажатии Enter
+        document.getElementById('searchInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchDocuments();
+            }
+        });
+    </script>
 
     <!-- добавление футера внизу -->
 	<footer>

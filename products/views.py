@@ -1,108 +1,224 @@
 import openpyxl
 from openpyxl.styles import Font
-from io import BytesIO
-import os
 import io
-import urllib, base64
 import math
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
+from matplotlib.patches import Circle
+from io import BytesIO
+import logging
+import json
+import base64
+import numpy as np
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import Project, Attachment, Profile, Protocol
 from .forms import ProjectForm, AttachmentForm, ProfileForm, ProtocolForm
 from openpyxl import Workbook
+from django.core.paginator import Paginator
 
 def index(request):
-    projects = Project.objects.all()
-    attachments = Attachment.objects.all()
-    profiles = Profile.objects.all()
-    protocols = Protocol.objects.order_by('-created_at')
+    # Получаем данные с пагинацией
+    projects = Paginator(Project.objects.all().order_by('-id'), 10)
+    attachments = Paginator(Attachment.objects.all().order_by('-id'), 10)
+    profiles = Paginator(Profile.objects.all().order_by('-created_at'), 10)
+    protocols = Paginator(Protocol.objects.all().order_by('-created_at'), 10)
+
+    # Получаем номер страницы из GET-параметра
+    page_number = request.GET.get('page')
+
     return render(request, 'index.html', {
-        'projects': projects,
-        'attachments': attachments,
-        'profiles': profiles,
-        'protocols': protocols,
+        'projects': projects.get_page(page_number),
+        'attachments': attachments.get_page(page_number),
+        'profiles': profiles.get_page(page_number),
+        'protocols': protocols.get_page(page_number)
     })
+
+def profil_page(request):
+    return render(request, 'profil.html')
 
 #для строки поиска
 def search_view(request):
     query=request.GET.get('q')
     return render(request, 'search_results.html', {'query': query})
 
-# Функции-помощники для безопасного разбора списков
-def parse_float_list(post_data, field_name):
-    return [
-        float(x) for x in post_data.get(field_name, '').split(',')
-        if x.strip() != ''
-    ]
-
-def parse_str_list(post_data, field_name):
-    return [
-        x.strip() for x in post_data.get(field_name, '').split(',')
-        if x.strip() != ''
-    ]
-def profil(request):
+@csrf_exempt
+def generate_profile(request):
     if request.method == 'POST':
-        # Получение данных с формы profil.html
-        # Пример:
         try:
-
-            ground_levels = parse_float_list(request.POST, 'ground_levels')
-            pipe_levels = parse_float_list(request.POST, 'pipe_levels')
-            pit_x = parse_float_list(request.POST, 'pit_x')
-            pit_y = parse_float_list(request.POST, 'pit_y')
-            pit_d = parse_float_list(request.POST, 'pit_d')
-            comm_x = parse_float_list(request.POST, 'comm_x')
-            comm_y = parse_float_list(request.POST, 'comm_y')
-            comm_d = parse_float_list(request.POST, 'comm_d')
-            comm_type = parse_str_list(request.POST, 'comm_type')
-
-            fig, ax = plt.subplots()
-            ax.plot(ground_levels, label='Уровень грунта')
-            ax.plot(pipe_levels, label='Уровень трубы')
-
-            # Приямки
-            for x, y, d in zip(pit_x, pit_y, pit_d):
-                pit = plt.Circle((x, y), d, color='red', alpha=0.5)
-                ax.add_patch(pit)
-
-            # Коммуникации
-            for x, y, d, t in zip(comm_x, comm_y, comm_d, comm_type):
-                comm = plt.Circle((x, y), d, alpha=0.5, label=t)
-                ax.add_patch(comm)
-
-            ax.legend(loc='best')
-            ax.set_title('Профиль ГНБ')
-            ax.set_xlabel('Длина, м')
-            ax.set_ylabel('Глубина, м')
-            ax.grid(True)
-
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png')
-            buf.seek(0)
-            image = base64.b64encode(buf.read()).decode('utf-8')
-            buf.close()
-
-            return render(request, 'profil.html', {'graph': image})
+            data = json.loads(request.body)
+            #Валидация данных
+            if not data.get('title') or not data.get('ground_lengths'):
+                return JsonResponse({'error': 'Недостаточно данных'}, status=400)
+            # Здесь может быть ваша логика обработки
+            response_data = {
+                'status': 'success',
+                'title': data['title'],
+                'message': 'Профиль успешно сгенерирован'
+            }
+            return JsonResponse(response_data)
 
         except Exception as e:
-            return render(request, 'profil.html', {'error': str(e)})
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Метод не разрешен'}, status=405)
 
-    return render(request, 'profil.html')
+logger=logging.getLogger(__name__)
 
 
+@csrf_exempt
+def generate_profile_image(request):
+    if request.method == 'POST':
+        print("\n=== НОВЫЙ ЗАПРОС ===")  # Отладочный разделитель
+
+        # 1. Логирование сырых данных
+        raw_data = request.body.decode('utf-8')
+        print("Сырые данные запроса:", raw_data)
+
+        try:
+            # 2. Парсинг JSON
+            data = json.loads(raw_data)
+            print("Распарсенные данные:", json.dumps(data, indent=2))
+
+            # 3. Валидация обязательных полей
+            required_fields = ['title', 'ground_lengths', 'ground_heights']
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                error_msg = f"Отсутствуют обязательные поля: {', '.join(missing_fields)}"
+                print(error_msg)
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+            # 4. Обработка данных грунта
+            try:
+                ground_lengths = [float(x.strip()) for x in data['ground_lengths'].split(',')]
+                ground_heights = [float(x.strip()) for x in data['ground_heights'].split(',')]
+            except ValueError as e:
+                error_msg = f"Ошибка преобразования данных грунта: {str(e)}"
+                print(error_msg)
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+            # 5. Проверка согласованности данных
+            if len(ground_lengths) != len(ground_heights):
+                error_msg = f"Несоответствие количества точек: {len(ground_lengths)} длин vs {len(ground_heights)} высот"
+                print(error_msg)
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+            if len(ground_lengths) < 2:
+                error_msg = "Недостаточно точек для построения графика (минимум 2)"
+                print(error_msg)
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+            # 6. Обработка труб (если есть)
+            pipes_data = []
+            for pipe in data.get('pipes', []):
+                try:
+                    lengths = [float(x.strip()) for x in pipe['lengths'].split(',')]
+                    heights = [float(x.strip()) for x in pipe['heights'].split(',')]
+                    pipes_data.append({
+                        'name': pipe.get('name', 'Труба'),
+                        'lengths': lengths,
+                        'heights': heights
+                    })
+                except Exception as e:
+                    print(f"Ошибка обработки трубы: {str(e)}")
+                    continue
+
+            # 7. Создание графика
+            plt.figure(figsize=(14, 8))
+
+            # График грунта
+            plt.plot(ground_lengths, ground_heights, 'b-', label='Уровень грунта', linewidth=2)
+
+            # Графики труб
+            for pipe in pipes_data:
+                plt.plot(pipe['lengths'], pipe['heights'], '-', linewidth=3, label=pipe['name'])
+
+            # Настройки графика
+            plt.title(data['title'], fontsize=14, pad=20)
+            plt.xlabel('Длина прокола, м', fontsize=12)
+            plt.ylabel('Отметки высот, м', fontsize=12)
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+
+            # 8. Сохранение в буфер
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
+            plt.close()
+
+            # 9. Подготовка ответа
+            buffer.seek(0)
+            print("График успешно сгенерирован")
+            return HttpResponse(buffer.getvalue(), content_type='image/png')
+
+        except json.JSONDecodeError as e:
+            error_msg = f"Ошибка декодирования JSON: {str(e)}"
+            print(error_msg)
+            return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+        except Exception as e:
+            error_msg = f"Непредвиденная ошибка: {str(e)}"
+            print(error_msg)
+            return JsonResponse({'status': 'error', 'message': error_msg}, status=500)
+
+    error_msg = "Метод не разрешен (требуется POST)"
+    print(error_msg)
+    return JsonResponse({'status': 'error', 'message': error_msg}, status=405)
+
+@csrf_exempt
+def test_matplotlib(request):
+    try:
+        plt.figure()
+        plt.plot([0, 1, 2], [0, 1, 0])
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        plt.close()
+        buffer.seek(0)
+        return HttpResponse(buffer, content_type='image/png')
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
 def save_profile(request):
     if request.method == 'POST':
-        image_data = request.session.get('profile_image')
-        address = request.POST.get('address')
-        description = request.POST.get('description')
-        if image_data:
-            profile = Profile(address=address, description=description)
-            profile.image.save(f"profile_{address}.png", ContentFile(image_data))
-            profile.save()
-    return redirect('index')
+        try:
+            data = json.loads(request.body)
 
+            # Проверяем обязательные поля
+            if not data.get('address') or not data.get('image_data'):
+                return JsonResponse({'status': 'error', 'message': 'Адрес и изображение обязательны'}, status=400)
+
+            # Декодируем изображение
+            format, imgstr = data['image_data'].split(';base64,')
+            ext = format.split('/')[-1]
+            image_file = ContentFile(
+                base64.b64decode(imgstr),
+                name=f"profile_{data['address'][:50]}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+            )
+
+            # Создаем профиль
+            profile = Profile(
+                address=data['address'],
+                description=data.get('description', ''),
+                image=image_file
+            )
+            profile.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Профиль сохранен',
+                'profile_id': profile.id,
+                'address': profile.address,
+                'created_at': profile.created_at.strftime("%d.%m.%Y %H:%M")
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Метод не разрешен'}, status=405)
+
+@csrf_exempt
 def generate_protocol(request):
     if request.method == 'POST':
         address = request.POST.get('address')

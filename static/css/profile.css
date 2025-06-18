@@ -1,0 +1,109 @@
+.profile-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-generate {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-save {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-protocol {
+    background: #9C27B0;
+    color: white;
+}
+
+.btn-add {
+    background: #FF9800;
+    color: white;
+}
+
+.btn-remove {
+    background: #f44336;
+    color: white;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.pipe-group, .comm-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.pit-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.result-container {
+    margin-top: 30px;
+    padding: 20px;
+    border-top: 2px solid #eee;
+}
+
+.chart-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#profileChart {
+    max-width: 100%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+::placeholder { color: blue; opacity: 1; /* Chrome, Firefox, Opera */}
+: -ms-input-placeholder { /* Microsoft Explorer 10-11 */ color: blue;}
+:: -ms-input-placeholder { /* Microsoft Edge */ color:blue; }

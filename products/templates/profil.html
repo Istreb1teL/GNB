@@ -10,6 +10,7 @@
 	<!-- название стриницы -->
 	<title>GNB</title>
 	<link rel="stylesheet" href="{% static '/css/profil.css' %}" type="text/css">
+	<script src="{% static 'js/profile.js' %}"></script>
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Oswald:400,300" type="text/css">
 
 	<!--[if lt IE 9]>
@@ -18,67 +19,246 @@
     <title>Title</title>
 </head>
 <body>
-    <h1>Создание графика прокола</h1>
+<div class="profile-container">
+    <h1>Создание профиля прокола</h1>
 
-    <form method="post">
+    <form id="profileForm">
         {% csrf_token %}
-        <label>Название графика:</label>
-        <input type="text" name="title" required><br>
 
-        <label>X отметки грунта (длины, через запятую):</label>
-        <input type="text" name="ground_x" required><br>
+        <!-- Основные параметры -->
+        <div class="form-section">
+            <h3>Основные параметры</h3>
+            <div class="form-group">
+                <label for="profileTitle">Название профиля*:</label>
+                <input type="text" id="profileTitle" required placeholder="Введите уникальное название профиля">
+            </div>
+            <div class="form-group">
+                <label for="drillingLength">Длина прокола (м)*:</label>
+                <input type="number" id="drillingLength" required step="0.1" placeholder="30.0">
+            </div>
+        </div>
 
-        <label>Y отметки грунта (высоты, через запятую):</label>
-        <input type="text" name="ground_y" required><br>
+        <!-- Траектория грунта -->
+        <div class="form-section">
+            <h3>Отметки грунта*</h3>
+            <div class="form-group">
+                <label>Длины (м), через запятую:</label>
+                <input type="text" id="groundLengths" required
+                       placeholder="0,3,6,9,12,15,18,21,24,27,30,31">
+            </div>
+            <div class="form-group">
+                <label>Высоты (м), через запятую:</label>
+                <input type="text" id="groundHeights" required
+                       placeholder="111.22,111.32,111.45,111.60,111.75,111.89,112.01,112.28,112.28,112.28,112.15,112.17">
+            </div>
+        </div>
 
+        <!-- Трубы -->
+        <div class="form-section">
+            <h3>Трубы</h3>
+            <div id="pipesContainer">
+                <div class="pipe-group">
+                    <div class="form-group">
+                        <label>Название трубы:</label>
+                        <input type="text" class="pipeName" placeholder="Труба ПЭ d 200,100мм">
+                    </div>
+                    <div class="form-group">
+                        <label>Длины (м), через запятую:</label>
+                        <input type="text" class="pipeLengths" placeholder="0,3,6,9,12,15,18,21,24,27,30,31">
+                    </div>
+                    <div class="form-group">
+                        <label>Высоты (м), через запятую:</label>
+                        <input type="text" class="pipeHeights" placeholder="109.22,109.02,108.85,108.65,108.5,108.3,108.5,108.75,109.05,109.75,110.67,110.87">
+                    </div>
+                    <button type="button" class="btn btn-remove-pipe">Удалить трубу</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" id="addPipeBtn">+ Добавить трубу</button>
+        </div>
 
-    <form method="post">
-        {% csrf_token %}
-        <label>Название графика:</label>
-        <input type="text" name="title" required><br>
+        <!-- Приямки -->
+        <div class="form-section">
+            <h3>Приямки</h3>
+            <div id="pitsContainer">
+                <div class="pit-group">
+                    <div class="form-group">
+                        <label>Длина приямка 1 (м):</label>
+                        <input type="number" class="pitLength" step="0.1" placeholder="-0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Высота приямка 1 (м):</label>
+                        <input type="number" class="pitHeight" step="0.01" placeholder="109.0">
+                    </div>
+                </div>
+                <div class="pit-group">
+                    <div class="form-group">
+                        <label>Длина приямка 2 (м):</label>
+                        <input type="number" class="pitLength" step="0.1" placeholder="31.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Высота приямка 2 (м):</label>
+                        <input type="number" class="pitHeight" step="0.01" placeholder="110.5">
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" id="addPitBtn">+ Добавить приямок</button>
+            <button type="button" class="btn btn-remove" id="removePitBtn">- Удалить приямок</button>
+        </div>
 
-        <label>X отметки поверхности (длины, через запятую):</label>
-        <input type="text" name="ground_x" required><br>
+        <!-- Коммуникации -->
+        <div class="form-section">
+            <h3>Коммуникации</h3>
+            <div id="communicationsContainer">
+                <div class="comm-group">
+                    <div class="form-group">
+                        <label>Длина коммуникации (м):</label>
+                        <input type="number" class="commLength" step="0.1" placeholder="6.0">
+                    </div>
+                    <div class="form-group">
+                        <label>Высота коммуникации (м):</label>
+                        <input type="number" class="commHeight" step="0.01" placeholder="109.8">
+                    </div>
+                    <div class="form-group">
+                        <label>Название коммуникации:</label>
+                        <input type="text" class="commName" placeholder='ВОЛС ПАО "Вымпелком"'>
+                    </div>
+                    <button type="button" class="btn btn-remove-comm">Удалить коммуникацию</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" id="addCommBtn">+ Добавить коммуникацию</button>
+        </div>
 
-        <label>Y отметки поверхности (высоты, через запятую):</label>
-        <input type="text" name="ground_y" required><br>
+        <!-- Кнопки действий -->
+        <div class="action-buttons">
+            <button type="button" class="btn btn-generate" id="generateBtn">Сгенерировать профиль</button>
+            <button type="button" class="btn btn-save" id="saveBtn">Сохранить профиль</button>
+            <button type="button" class="btn btn-protocol" id="protocolBtn">Сформировать протокол</button>
+        </div>
 
-        <label>Название коммуникации:</label>
-        <input type="text" name="comm_name"><br>
-
-        <label>X коммуникаций:</label>
-        <input type="text" name="comm_x"><br>
-
-        <label>Y коммуникаций:</label>
-        <input type="text" name="comm_y"><br>
-
-        <label>Форма коммуникации:</label>
-        <select name="shape">
-            <option value="ellipse">Эллипс</option>
-            <option value="circle">Круг</option>
-        </select>
-
-        <label>Название коммуникации:</label>
-        <input type="text" name="comm_name"><br>
-
-        <label>X коммуникаций:</label>
-        <input type="text" name="comm_x"><br>
-
-        <label>Y коммуникаций:</label>
-        <input type="text" name="comm_y"><br>
-
-        <label>Форма коммуникации:</label>
-        <select name="shape">
-            <option value="ellipse">Эллипс</option>
-            <option value="circle">Круг</option>
-        </select><br><br>    <h1>Создание графика прокола</h1>
-        <br></br>
-
-        <button type="submit" name="generate">Сформировать профиль</button>
-        <button type="submit" name="save">Сохранить профиль</button>
-        <button onclick="window.location.href='{% url 'protocol' %}>Сформировать протокол</button>
-
+        <!-- Блок с результатом -->
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <h3>Результат</h3>
+            <div class="chart-container">
+                <img id="profileChart" src="" alt="График профиля">
+            </div>
+        </div>
     </form>
+</div>
+
+<script>
+// Генерация профиля
+document.getElementById('generateBtn').addEventListener('click', function() {
+    const profileData = collectProfileData();
+
+    // Валидация данных
+    if (!validateProfileData(profileData)) {
+        return;
+    }
+
+    // Показываем загрузку
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Генерация...';
+
+    // Отправка данных на сервер
+    fetch('/generate_profile_image/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(profileData)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сервера');
+        return response.blob();
+    })
+    .then(blob => {
+        // Создаем URL для изображения
+        const imageUrl = URL.createObjectURL(blob);
+        const imgElement = document.getElementById('profileChart');
+        imgElement.src = imageUrl;
+        document.getElementById('resultContainer').style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка при генерации профиля: ' + error.message);
+    })
+    .finally(() => {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Сгенерировать профиль';
+    });
+});
+
+// Функция сбора данных с формы
+function collectProfileData() {
+    const data = {
+        title: document.getElementById('profileTitle').value,
+        length: document.getElementById('drillingLength').value,
+        ground_lengths: document.getElementById('groundLengths').value,
+        ground_heights: document.getElementById('groundHeights').value,
+        pipes: [],
+        pits: [],
+        communications: []
+    };
+
+    // Собираем данные по трубам
+    document.querySelectorAll('.pipe-group').forEach(pipeGroup => {
+        data.pipes.push({
+            name: pipeGroup.querySelector('.pipeName').value,
+            lengths: pipeGroup.querySelector('.pipeLengths').value,
+            heights: pipeGroup.querySelector('.pipeHeights').value
+        });
+    });
+
+    // Собираем данные по приямкам
+    document.querySelectorAll('.pit-group').forEach(pitGroup => {
+        data.pits.push({
+            length: pitGroup.querySelector('.pitLength').value,
+            height: pitGroup.querySelector('.pitHeight').value
+        });
+    });
+
+    // Собираем данные по коммуникациям
+    document.querySelectorAll('.comm-group').forEach(commGroup => {
+        data.communications.push({
+            length: commGroup.querySelector('.commLength').value,
+            height: commGroup.querySelector('.commHeight').value,
+            name: commGroup.querySelector('.commName').value
+        });
+    });
+
+    return data;
+}
+
+// Валидация данных
+function validateProfileData(data) {
+    if (!data.title) {
+        alert('Введите название профиля!');
+        return false;
+    }
+
+    if (!data.ground_lengths || !data.ground_heights) {
+        alert('Заполните данные по грунту!');
+        return false;
+    }
+
+    try {
+        const lengths = data.ground_lengths.split(',').map(Number);
+        const heights = data.ground_heights.split(',').map(Number);
+
+        if (lengths.length !== heights.length) {
+            alert('Количество точек по длине и высоте грунта должно совпадать!');
+            return false;
+        }
+    } catch (e) {
+        alert('Ошибка в данных по грунту! Проверьте формат ввода.');
+        return false;
+    }
+
+    return true;
+}
+</script>
 
 </body>
 </html>
