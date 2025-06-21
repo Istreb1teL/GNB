@@ -243,12 +243,26 @@ body {
 .download-btn:hover {
     text-decoration: underline;
 }
-
+/* Стили для пустых списков */
 .empty-message {
-    color: #666;
     text-align: center;
-    padding: 20px;
+    padding: 40px 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 20px;
 }
+
+.empty-message p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Иконки */
+.fas {
+    margin-right: 5px;
+}
+
+
 //все для футера
 footer {
 	background: #7e7e7e;

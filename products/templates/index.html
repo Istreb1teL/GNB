@@ -73,7 +73,7 @@
                     <img src="{% static 'img/foto2.jpg' %}" alt="Горизонтально-направленное бурение" class="welcome-image">
                 </div>
             </div>
-
+            <!-- Вкладка проекты -->
             <div class="tab-content" id="projects-tab">
                 <button class="btn btn-upload" onclick="location.href='{% url 'upload_project' %}'">
                     Загрузить проект
@@ -87,9 +87,9 @@
                         </div>
                         <div class="document-info">
                             <h4>{{ project.title }}</h4>
-                            <p>{{ project.description|truncatechars:100 }}</p>
+                            <p>{{ project.description|truncatechars:100|default:"Описание отсутствует" }}</p>
                             <div class="document-meta">
-                                <span>Загружен: {{ project.created_at|date:"d.m.Y" }}</span>
+                                <span>{{ project.created_at|date:"d.m.Y H:i" }}</span>
                                 <a href="{{ project.file.url }}" download class="download-btn">
                                     <i class="fas fa-download"></i> Скачать
                                 </a>
@@ -97,11 +97,14 @@
                         </div>
                     </div>
                     {% empty %}
-                    <p class="empty-message">Нет загруженных проектов</p>
+                    <div class="empty-message">
+                        <p>Нет загруженных проектов</p>
+                        <a href="{% url 'upload_project' %}" class="btn btn-upload">Добавить первый проект</a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-
+            <!-- Вкладка привязки -->
             <div class="tab-content" id="attachments-tab">
                 <button class="btn btn-upload" onclick="location.href='{% url 'upload_attachment' %}'">
                     Загрузить привязку
@@ -111,14 +114,14 @@
                     {% for attachment in attachments %}
                     <div class="document-card">
                         <div class="document-icon">
-                            <i class="fas fa-file-alt"></i>
+                            <i class="fas fa-link"></i>
                         </div>
                         <div class="document-info">
                             <h4>{{ attachment.title }}</h4>
-                            <p>{{ attachment.description|truncatechars:100 }}</p>
+                            <p>К проекту: <strong>{{ attachment.project.title }}</strong></p>
+                            <p>{{ attachment.description|truncatechars:100|default:"Описание отсутствует" }}</p>
                             <div class="document-meta">
-                                <span>Проект: {{ attachment.project.title }}</span>
-                                <span>Загружена: {{ attachment.created_at|date:"d.m.Y" }}</span>
+                                <span>{{ attachment.created_at|date:"d.m.Y H:i" }}</span>
                                 <a href="{{ attachment.file.url }}" download class="download-btn">
                                     <i class="fas fa-download"></i> Скачать
                                 </a>
@@ -126,11 +129,13 @@
                         </div>
                     </div>
                     {% empty %}
-                    <p class="empty-message">Нет загруженных привязок</p>
+                    <div class="empty-message">
+                        <p>Нет загруженных привязок</p>
+                        <a href="{% url 'upload_attachment' %}" class="btn btn-upload">Добавить первую привязку</a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-
             <!-- Новая вкладка для профилей -->
             <div class="tab-content" id="profiles-tab">
                 <h2>Сохраненные профили</h2>
@@ -175,7 +180,7 @@
                     {% endif %}
                 </div>
                 {% endif %}
-            </div>
+
 
             <div class="tab-content" id="protocols-tab">
                 <div class="upload-section">
@@ -186,9 +191,6 @@
                         <button type="submit" name="upload_protocol" class="upload-btn">Загрузить протокол</button>
                     </form>
                 </div>
-                <table class="document-table">
-                    <!-- Таблица протоколов -->
-                </table>
             </div>
         </div>
     </main>
