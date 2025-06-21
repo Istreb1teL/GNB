@@ -52,11 +52,20 @@ select {
 .btn-save {
     background: #2196F3;
     color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.btn-save:hover {
+    background-color: #45a049;
 }
 
 .btn-protocol {
     background: #9C27B0;
     color: white;
+
 }
 
 .btn-add {
@@ -93,12 +102,21 @@ select {
     margin-top: 30px;
     padding: 20px;
     border-top: 2px solid #eee;
+    border-radius: 5px;
+    background-color: #f9f9f9;
 }
 
 .chart-container {
-    margin-top: 20px;
+    margin-top: 20px 0;
     text-align: center;
 }
+.profile-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
 
 #profileChart {
     max-width: 100%;

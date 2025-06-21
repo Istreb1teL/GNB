@@ -33,7 +33,9 @@ document.getElementById('generateBtn').addEventListener('click', function() {
     .then(response => response.blob())
     .then(blob => {
         const imgUrl = URL.createObjectURL(blob);
-        document.getElementById('profileChart').src = imgUrl;
+        const imgElement = document.getElementById('profileChart');
+        imgElement.src = imgUrl;
+        //document.getElementById('profileChart').src = imgUrl;
         document.getElementById('resultContainer').style.display = 'block';
     })
     .catch(error => {
@@ -41,7 +43,7 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         alert("Ошибка: " + error.message);
     });
 });
-
+// сохранить профиль
 document.getElementById('saveBtn').addEventListener('click', function() {
     const imgElement = document.getElementById('profileChart');
     if (!imgElement.src) {
@@ -91,4 +93,69 @@ document.getElementById('saveBtn').addEventListener('click', function() {
             }
             reader.readAsDataURL(blob);
         });
+});
+// Функция для кнопки "Сохранить профиль"
+document.getElementById('saveBtn').addEventListener('click', async function() {
+    console.log('Начато сохранение профиля...');
+
+    try {
+        const imgElement = document.getElementById('profileChart');
+        if (!imgElement?.src) {
+            alert('Сначала сгенерируйте профиль!');
+            return;
+        }
+
+        const address = prompt('Введите адрес объекта:');
+        if (!address) return;
+
+        const description = prompt('Введите описание профиля (необязательно):') || '';
+
+        // Конвертация изображения
+        const response = await fetch(imgElement.src);
+        if (!response.ok) throw new Error('Ошибка загрузки изображения');
+        const blob = await response.blob();
+
+        const base64data = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        });
+
+        // Отправка данных
+        const saveResponse = await fetch('/save_profile/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                address: address,
+                description: description,
+                image_data: base64data
+            })
+        });
+
+        const result = await saveResponse.json();
+        console.log('Результат сохранения:', result);
+
+        if (result.status === 'success') {
+            alert(`Профиль успешно сохранен! ID: ${result.id}`);
+            window.location.href = '/'; // Переход на главную
+        } else {
+            throw new Error(result.message || 'Ошибка сохранения');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка сохранения: ' + error.message);
+    }
+});
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            console.log('Save button clicked'); // Для отладки
+            // ... остальной код
+        });
+    } else {
+        console.error('Save button not found! Check HTML');
+    }
 });

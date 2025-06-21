@@ -6,11 +6,30 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['address', 'description', 'file']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+        labels = {
+            'title': 'Название проекта',
+            'description': 'Описание',
+            'file': 'Файл проекта'
+        }
+
 
 class AttachmentForm(forms.ModelForm):
     class Meta:
         model = Attachment
         fields = ['address', 'description', 'file']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'project': forms.Select(attrs={'class': 'form-control'})
+        }
+        labels = {
+            'title': 'Название привязки',
+            'description': 'Описание',
+            'file': 'Файл привязки',
+            'project': 'Связанный проект'
+        }
 
 class ProfileForm(forms.ModelForm):
     class Meta:

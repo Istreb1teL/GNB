@@ -9,16 +9,20 @@ from matplotlib.patches import Circle
 from io import BytesIO
 import logging
 import json
+from django.utils import timezone
 import base64
 import numpy as np
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from .models import Project, Attachment, Profile, Protocol
 from .forms import ProjectForm, AttachmentForm, ProfileForm, ProtocolForm
 from openpyxl import Workbook
 from django.core.paginator import Paginator
+
+logger=logging.getLogger(__name__)
 
 def index(request):
     # Получаем данные с пагинацией
@@ -31,14 +35,56 @@ def index(request):
     page_number = request.GET.get('page')
 
     return render(request, 'index.html', {
-        'projects': projects.get_page(page_number),
-        'attachments': attachments.get_page(page_number),
-        'profiles': profiles.get_page(page_number),
+        'projects': projects,
+        'attachments': attachments,
+        'profiles': profiles,
         'protocols': protocols.get_page(page_number)
     })
 
 def profil_page(request):
     return render(request, 'profil.html')
+
+
+def upload_project(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, request.FILES)
+        if form.is_valid():
+            project = form.save(commit=False)
+            if request.user.is_authenticated:
+                project.author = request.user
+            project.save()
+            messages.success(request, 'Проект успешно загружен!')
+            return redirect('index')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = ProjectForm()
+
+    return render(request, 'upload_form.html', {
+        'form': form,
+        'title': 'Загрузка проекта'
+    })
+
+
+def upload_attachment(request):
+    if request.method == 'POST':
+        form = AttachmentForm(request.POST, request.FILES)
+        if form.is_valid():
+            attachment = form.save(commit=False)
+            if request.user.is_authenticated:
+                attachment.author = request.user
+            attachment.save()
+            messages.success(request, 'Привязка успешно загружена!')
+            return redirect('index')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = AttachmentForm()
+
+    return render(request, 'upload_form.html', {
+        'form': form,
+        'title': 'Загрузка привязки'
+    })
 
 #для строки поиска
 def search_view(request):
@@ -64,9 +110,6 @@ def generate_profile(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Метод не разрешен'}, status=405)
-
-logger=logging.getLogger(__name__)
-
 
 @csrf_exempt
 def generate_profile_image(request):
@@ -179,25 +222,38 @@ def test_matplotlib(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
 @csrf_exempt
 def save_profile(request):
     if request.method == 'POST':
+        logger.info("Получен запрос на сохранение профиля")
         try:
+            # Парсим JSON данные
             data = json.loads(request.body)
+            logger.debug(f"Данные запроса: {data}")
 
             # Проверяем обязательные поля
             if not data.get('address') or not data.get('image_data'):
-                return JsonResponse({'status': 'error', 'message': 'Адрес и изображение обязательны'}, status=400)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Адрес и изображение обязательны'
+                }, status=400)
+            if not data.get('image_data'):
+                return JsonResponse({'status': 'error', 'message': 'Изображение обязательно'}, status=400)
 
-            # Декодируем изображение
-            format, imgstr = data['image_data'].split(';base64,')
-            ext = format.split('/')[-1]
-            image_file = ContentFile(
-                base64.b64decode(imgstr),
-                name=f"profile_{data['address'][:50]}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-            )
+            # Декодируем изображение из base64
+            try:
+                format, imgstr = data['image_data'].split(';base64,')
+                ext = format.split('/')[-1]
+                file_content = base64.b64decode(imgstr)
+                file_name = f"profile_{data['address'][:50]}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
 
-            # Создаем профиль
+                image_file = ContentFile(file_content, name=file_name)
+            except Exception as e:
+                logger.error(f"Ошибка декодирования изображения: {str(e)}")
+                return JsonResponse({'status': 'error', 'message': 'Ошибка обработки изображения'}, status=400)
+
+            # Создание профиля
             profile = Profile(
                 address=data['address'],
                 description=data.get('description', ''),
@@ -205,15 +261,15 @@ def save_profile(request):
             )
             profile.save()
 
+            logger.info(f"Профиль сохранен. ID: {profile.id}")
             return JsonResponse({
                 'status': 'success',
-                'message': 'Профиль сохранен',
-                'profile_id': profile.id,
-                'address': profile.address,
-                'created_at': profile.created_at.strftime("%d.%m.%Y %H:%M")
+                'id': profile.id,
+                'image_url': profile.image.url
             })
 
         except Exception as e:
+            logger.error(f"Ошибка при сохранении профиля: {str(e)}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Метод не разрешен'}, status=405)
@@ -380,3 +436,19 @@ def protocol_view(request):
 
 def save_profile_document(request):
     return HttpResponse(" Заглушка для save_profile_document - функция работает")
+
+@csrf_exempt
+def log_action(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            logger.info(
+                f"Frontend log: {data.get('message')} | "
+                f"Page: {data.get('page')} | "
+                f"Data: {data.get('data')}"
+            )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            logger.error(f"Error logging frontend action: {str(e)}")
+            return JsonResponse({'status': 'error'}, status=400)
+    return JsonResponse({'status': 'error'}, status=405)

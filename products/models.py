@@ -1,9 +1,11 @@
 from django.db import models
+from django.utils import timezone
 
 class Project(models.Model):
     address = models.CharField(max_length=255, db_index=True)
     file = models.FileField(upload_to='projects/')
     description = models.TextField(blank=True, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.address} — {self.description}"
@@ -12,13 +14,15 @@ class Attachment(models.Model):  # Привязки
     address = models.CharField(max_length=255, db_index=True)
     file = models.FileField(upload_to='attachments/')
     description = models.TextField(blank=True, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.address} — {self.description}"
 
 class Profile(models.Model):
     address = models.CharField(max_length=255, verbose_name="Адрес")
-    description = models.TextField(verbose_name="Описание")
+    description = models.TextField(blank=True, verbose_name="Описание")
     image = models.ImageField(upload_to='profiles/', verbose_name="График профиля")
     created_at = models.DateTimeField(auto_now_add=True)
 
