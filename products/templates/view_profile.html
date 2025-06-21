@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="profile-detail-container">
+    <h2>Профиль прокола: {{ profile.address }}</h2>
+    <p class="profile-date">Создан: {{ profile.created_at|date:"d.m.Y H:i" }}</p>
+
+    {% if profile.description %}
+    <div class="profile-description">
+        <h3>Описание:</h3>
+        <p>{{ profile.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="profile-image-container">
+        <img src="{{ profile.image.url }}" alt="Профиль прокола {{ profile.address }}">
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ profile.image.url }}" download class="btn btn-download">
+            <i class="fas fa-download"></i> Скачать профиль
+        </a>
+        <a href="{% url 'index' %}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> На главную
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ from django.utils import timezone
 import base64
 import numpy as np
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
@@ -31,14 +31,11 @@ def index(request):
     profiles = Paginator(Profile.objects.all().order_by('-created_at'), 10)
     protocols = Paginator(Protocol.objects.all().order_by('-created_at'), 10)
 
-    # Получаем номер страницы из GET-параметра
-    page_number = request.GET.get('page')
-
     return render(request, 'index.html', {
         'projects': projects,
         'attachments': attachments,
         'profiles': profiles,
-        'protocols': protocols.get_page(page_number)
+        'protocols': protocols
     })
 
 def profil_page(request):
@@ -452,3 +449,7 @@ def log_action(request):
             logger.error(f"Error logging frontend action: {str(e)}")
             return JsonResponse({'status': 'error'}, status=400)
     return JsonResponse({'status': 'error'}, status=405)
+
+def view_profile(request, profile_id):
+    profile = get_object_or_404(Profile, id=profile_id)
+    return render(request, 'view_profile.html', {'profile': profile})

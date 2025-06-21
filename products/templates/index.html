@@ -7,8 +7,10 @@
     <title>GNB</title>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link href="https://fonts.googleapis.com/css?family=Oswald:400,300" rel="stylesheet">
-    <script src="{% static 'js/index.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- <script src="{% static 'js/index.js' %}"></script> -->
 </head>
+
 <body>
     <!-- Верхняя панель -->
     <header class="top-bar">
@@ -21,38 +23,32 @@
     </header>
 
     <!-- Модальное окно -->
-    <div id="loginModal" style="display:none; position:fixed; top:20%; left:30%; background:white; border:1px solid #ccc; padding:20px;">
-        <h3>Вход / Регистрация</h3>
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <label>Имя пользователя:</label>
-            <input type="text" name="username">
-            <label>Пароль:</label>
-            <input type="password" name="password">
-            <button type="submit">Войти</button>
-            <button type="button" onclick="document.getElementById('loginModal').style.display='none'">Закрыть</button>
-        </form>
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Вход / Регистрация</h3>
+            <form id="loginForm" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Имя пользователя:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Войти</button>
+                <button type="button" class="btn btn-secondary" id="registerBtn">Регистрация</button>
+            </form>
+        </div>
     </div>
-    <!-- Скрипт модального окна -->
-    <script>
-        const modal = document.getElementById("loginModal");
-        const btn = document.getElementById("loginBtn");
-        const span = document.getElementById("closeModal");
 
-        btn.onclick = () => modal.style.display = "block";
-        span.onclick = () => modal.style.display = "none";
-        window.onclick = (event) => {
-            if (event.target == modal) modal.style.display = "none";
-        }
-    </script>
-
-
-    <!-- Меню -->
-        <main class="main-content">
+    <!-- Основное содержимое -->
+    <main class="main-content">
         <!-- Поисковая строка -->
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Поиск по документам...">
-            <button onclick="searchDocuments()" class="search-btn">Найти</button>
+            <button id="searchBtn" class="search-btn">Найти</button>
         </div>
 
         <!-- Вкладки -->
@@ -73,23 +69,23 @@
                     <img src="{% static 'img/foto2.jpg' %}" alt="Горизонтально-направленное бурение" class="welcome-image">
                 </div>
             </div>
-            <!-- Вкладка проекты -->
+
             <div class="tab-content" id="projects-tab">
                 <button class="btn btn-upload" onclick="location.href='{% url 'upload_project' %}'">
-                    Загрузить проект
+                    <i class="fas fa-upload"></i> Загрузить проект
                 </button>
 
                 <div class="document-list">
                     {% for project in projects %}
                     <div class="document-card">
                         <div class="document-icon">
-                            <i class="fas fa-file-alt"></i>
+                            <i class="fas fa-project-diagram"></i>
                         </div>
                         <div class="document-info">
-                            <h4>{{ project.title }}</h4>
+                            <h3>{{ project.title }}</h3>
                             <p>{{ project.description|truncatechars:100|default:"Описание отсутствует" }}</p>
                             <div class="document-meta">
-                                <span>{{ project.created_at|date:"d.m.Y H:i" }}</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ project.created_at|date:"d.m.Y" }}</span>
                                 <a href="{{ project.file.url }}" download class="download-btn">
                                     <i class="fas fa-download"></i> Скачать
                                 </a>
@@ -99,15 +95,17 @@
                     {% empty %}
                     <div class="empty-message">
                         <p>Нет загруженных проектов</p>
-                        <a href="{% url 'upload_project' %}" class="btn btn-upload">Добавить первый проект</a>
+                        <a href="{% url 'upload_project' %}" class="btn btn-upload">
+                            <i class="fas fa-plus-circle"></i> Добавить первый проект
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-            <!-- Вкладка привязки -->
+
             <div class="tab-content" id="attachments-tab">
                 <button class="btn btn-upload" onclick="location.href='{% url 'upload_attachment' %}'">
-                    Загрузить привязку
+                    <i class="fas fa-upload"></i> Загрузить привязку
                 </button>
 
                 <div class="document-list">
@@ -117,11 +115,11 @@
                             <i class="fas fa-link"></i>
                         </div>
                         <div class="document-info">
-                            <h4>{{ attachment.title }}</h4>
-                            <p>К проекту: <strong>{{ attachment.project.title }}</strong></p>
+                            <h3>{{ attachment.title }}</h3>
+                            <p>Проект: <strong>{{ attachment.project.title }}</strong></p>
                             <p>{{ attachment.description|truncatechars:100|default:"Описание отсутствует" }}</p>
                             <div class="document-meta">
-                                <span>{{ attachment.created_at|date:"d.m.Y H:i" }}</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ attachment.created_at|date:"d.m.Y" }}</span>
                                 <a href="{{ attachment.file.url }}" download class="download-btn">
                                     <i class="fas fa-download"></i> Скачать
                                 </a>
@@ -131,85 +129,63 @@
                     {% empty %}
                     <div class="empty-message">
                         <p>Нет загруженных привязок</p>
-                        <a href="{% url 'upload_attachment' %}" class="btn btn-upload">Добавить первую привязку</a>
+                        <a href="{% url 'upload_attachment' %}" class="btn btn-upload">
+                            <i class="fas fa-plus-circle"></i> Добавить первую привязку
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-            <!-- Новая вкладка для профилей -->
-            <div class="tab-content" id="profiles-tab">
-                <h2>Сохраненные профили</h2>
 
-                {% if profiles %}
-                <div class="profiles-grid">
+            <div class="tab-content" id="profiles-tab">
+                <div class="profiles-container">
                     {% for profile in profiles %}
                     <div class="profile-card">
-                        <div class="profile-image-container">
-                            <img src="{{ profile.image.url }}" alt="Профиль {{ profile.address }}">
-                        </div>
-                        <div class="profile-info">
+                        <div class="profile-header">
                             <h3>{{ profile.address }}</h3>
-                            <p class="description">{{ profile.description|default:"Описание отсутствует" }}</p>
-                            <p class="date">Создан: {{ profile.created_at|date:"d.m.Y H:i" }}</p>
+                            <span class="profile-date">{{ profile.created_at|date:"d.m.Y H:i" }}</span>
                         </div>
+                        <p class="profile-description">{{ profile.description|default:"Описание отсутствует" }}</p>
+                        <div class="profile-image-wrapper">
+                            <img src="{{ profile.image.url }}" alt="Профиль прокола {{ profile.address }}">
+                            <div class="profile-actions">
+                                <a href="{{ profile.image.url }}" download class="download-btn">Скачать</a>
+                                {% if profile.id %}
+                                <a href="{% url 'view_profile' profile.id %}" class="view-btn">Подробнее</a>
+                                {% else %}
+                                <span class="view-btn disabled">Подробнее</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-profiles">
+                        <p>Нет сохраненных профилей</p>
+                        <a href="{% url 'profil' %}" class="btn build-btn">Создать профиль</a>
                     </div>
                     {% endfor %}
                 </div>
-                {% else %}
-                <p>Нет сохраненных профилей</p>
-                {% endif %}
             </div>
 
-                <!-- Пагинация -->
-                {% if profiles.has_other_pages %}
-                <div class="pagination">
-                    {% if profiles.has_previous %}
-                        <a href="?page={{ profiles.previous_page_number }}">&laquo;</a>
-                    {% endif %}
-
-                    {% for num in profiles.paginator.page_range %}
-                        {% if profiles.number == num %}
-                            <span class="current">{{ num }}</span>
-                        {% else %}
-                            <a href="?page={{ num }}">{{ num }}</a>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if profiles.has_next %}
-                        <a href="?page={{ profiles.next_page_number }}">&raquo;</a>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-
             <div class="tab-content" id="protocols-tab">
-                <div class="upload-section">
-                    <h3>Загрузить новый протокол</h3>
-                    <form method="post" enctype="multipart/form-data" class="upload-form">
-                        {% csrf_token %}
-                        {{ protocol_form.as_p }}
-                        <button type="submit" name="upload_protocol" class="upload-btn">Загрузить протокол</button>
-                    </form>
+                <div class="protocols-container">
+                    <!-- Аналогичная структура для протоколов -->
                 </div>
             </div>
         </div>
     </main>
 
+    <footer>
+        <div id="footer">
+            <h3>PRODUCED BY</h3>
+            <p>Podporina Margarita Vladimirovna</p>
+            <div id="footer-logo">
+                <a href="/"><img src="{% static 'img/logo.png' %}" alt=""></a>
+                <p>Copyright © 2025 GNB. For HDD creation</p>
+            </div>
+        </div>
+    </footer>
 
-
-    <!-- добавление футера внизу -->
-	<footer>
-		<div id="footer">
-		 <div id="produced"></div>
-		 <h3>PRODUCED BY</h3>
-		 <p>
-			 Podporina Margarita Vladimirovna
-		 </p>
-		 <div id="footer-logo">
-			 <a href="/"><img src="{% static '/img/logo.png' %}" alt=""></a>
-			 <p>Copyright © 2025 GNB. For HDD creation</p>
-		 </div>
-		</div>
-	</footer>
+    <script src="{% static 'js/index.js' %}"></script>
 </body>
 </html>

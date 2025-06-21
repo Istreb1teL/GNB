@@ -96,29 +96,69 @@ document.querySelectorAll('.upload-form').forEach(form => {
     });
 });
 
-function initLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (!modal) return;
+// Обработка модального окна
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById("loginModal");
+    const loginBtn = document.getElementById("loginBtn");
+    const closeBtn = document.querySelector(".close-modal");
+    const registerBtn = document.getElementById("registerBtn");
 
-    const loginBtn = document.getElementById('loginBtn');
-    const closeBtn = document.getElementById('closeModal');
+    // Открытие модального окна
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            modal.style.display = "block";
+        });
+    }
 
-    loginBtn?.addEventListener('click', () => {
-        modal.style.display = 'block';
-        console.log('Модальное окно входа открыто');
-    });
+    // Закрытие модального окна
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = "none";
+        });
+    }
 
-    closeBtn?.addEventListener('click', () => {
-        modal.style.display = 'none';
-        console.log('Модальное окно закрыто');
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
+    // Закрытие при клике вне окна
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
         }
     });
-}
+
+    // Обработка кнопки регистрации
+    if (registerBtn) {
+        registerBtn.addEventListener('click', function() {
+            // Здесь можно добавить переход на страницу регистрации
+            window.location.href = "{% url 'register' %}";
+        });
+    }
+
+    // Обработка формы входа
+    const loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Ошибка входа. Проверьте данные.');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при входе');
+            }
+        });
+    }
+});
 
 function initSearch() {
     const searchBtn = document.getElementById('searchBtn');

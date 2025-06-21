@@ -15,4 +15,7 @@ urlpatterns = [
     path('export_protocol_excel/', views.export_protocol_excel, name='export_protocol_excel'),
     path('search/',views.search_view, name='search'),
     path('log_action/', views.log_action, name='log_action'),
+    path('profile/<int:profile_id>/', views.view_profile, name='view_profile'),
+    #path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    #path('register/', views.register, name='register'),
 ]
