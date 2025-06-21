@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="upload-container">
+    <h2>{{ title }}</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Загрузить</button>
+        <a href="{% url 'index' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+
+</body>
+</html>
